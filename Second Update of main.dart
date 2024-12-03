@@ -22,7 +22,7 @@ Future<void> main() async { //Initialises Flutter bindings and Hive
     if (itemInRow.length >= 5) {
       String name = itemInRow[0];
       String? clue = itemInRow[1].isEmpty ? null : itemInRow[1];
-      String location = itemInRow[2];
+      String location = itemInRow[2].trim(); // Trim the location
       String role = itemInRow[3];
       String dialogue = itemInRow[4];
       Node node = Node(name, clue!, location, role, dialogue);
@@ -55,7 +55,7 @@ class MyFlutterApp extends StatefulWidget {
 
 class MyFlutterState extends State<MyFlutterApp> {
   List<Node> nodes = [];
-  //List<String> filteredPeople = [];
+  List<String> filteredPeople = [];
   String result = '';
   String selectedRoom = '';
   String selectedPerson = '';
@@ -85,8 +85,7 @@ class MyFlutterState extends State<MyFlutterApp> {
 
   @override
   Widget build(BuildContext context) {
-    List<String> rooms = nodes.map((node) => node.location).toSet().toList();
-    List<String> people = nodes.map((node) => node.name).toList();
+    List<String> rooms = nodes.map((node) => node.location.trim()).toSet().toList(); // Ensure unique rooms
 
     return Scaffold(
       appBar: AppBar(
@@ -103,6 +102,11 @@ class MyFlutterState extends State<MyFlutterApp> {
                 onChanged: (String? newValue) {
                   setState(() {
                     selectedRoom = newValue!;
+                    filteredPeople = nodes
+                        .where((node) => node.location.trim() == selectedRoom)
+                        .map((node) => node.name)
+                        .toList();
+                    selectedPerson = ''; // Reset selected person when room changes
                   });
                 },
                 items: rooms.map<DropdownMenuItem<String>>((String value) {
@@ -123,7 +127,7 @@ class MyFlutterState extends State<MyFlutterApp> {
                     selectedPerson = newValue!;
                   });
                 },
-                items: people.map<DropdownMenuItem<String>>((String value) {
+                items: filteredPeople.map<DropdownMenuItem<String>>((String value) {
                   return DropdownMenuItem<String>(
                     value: value,
                     child: Text(value),
